@@ -17,32 +17,8 @@ depending on your system, you should be able to install all dependencies using p
 pip install -r requirements.txt
 ```
 
-if your system disallows installations using pip, you can use your system's package manager to install the associated requirements. *please make sure your system offers you the right packages, and not others that are similarly named.* for example, Ubuntu includes the package `python3-hidapi`, but it is **not** the right package. you must build from source if you cannot install from pip or your package manager.
+if your system disallows installations using pip, you can use your system's package manager to install the associated requirements. *please make sure your system offers you the right packages, and not others that are similarly named.* for example, Ubuntu includes the package `python3-hidapi`, but it is **not** the right package.
 
-
-an example of manual installation:
-```
-# building and installing PyGLM
-git clone --recursive https://github.com/Zuzu-Typ/PyGLM.git
-cd PyGLM
-git submodule update --init
-sudo python3 setup.py build
-sudo python3 setup.py install
-
-# building and installing hidapi
-git clone https://github.com/trezor/cython-hidapi.git
-cd cython-hidapi
-git submodule update --init
-sudo python3 setup.py build --without-libusb
-sudo python3 setup.py install
-
-# building and installing joycon-python
-git clone https://github.com/tocoteron/joycon-python
-cd joycon-python
-git submodule update --init
-sudo python3 setup.py build
-sudo python3 setup.py install
-```
 
 #### how to use
 1. place your Joy-Con parallel on a flat surface, buttons upward and pointing toward your display.
