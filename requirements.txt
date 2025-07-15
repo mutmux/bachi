@@ -1,0 +1,4 @@
+evdev>=1.7.0
+PyGLM>=2.7.1
+hid>=1.0.8
+joycon-python>=0.2.4
