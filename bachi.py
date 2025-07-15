@@ -11,9 +11,10 @@ pid_joycons = {
     0x2007: "Joy-Con (R)"
 }
 
-hit_window = 5000    # minimum rotation angle to trigger swing
 poll_rate = 1 / 300  # in hz
-sensitivity = 3000   # misfire prevention, increase to require more swing force
+swing_force_thres = 3000   # misfire prevention, increase to require more swing force
+swing_hit_thres = 4000   # downward swing angle (via accel_y) to determine hit
+swing_tilt_thres = 1800   # sideways swing angle (via accel_z) to differentiate don/kat
 
 try:
     # start your joycons...
@@ -47,18 +48,18 @@ def poll_joycon(pid, joycon):
             accel_z = joycon.get_accel_z()
             gyro_z = joycon.get_gyro_z()
 
-            print(f"[{pid_joycons[pid]}] \taccel_y: {cur_read} \taccel_z: {accel_z} \tgyro_z: {gyro_z}")
+            print(f"[{pid_joycons[pid]}] y: {cur_read} \tz: {accel_z} \tgyro: {gyro_z}")
 
             # TODO: use madgwick filter with accel and gyro data for maintaining accuracy
             # redo all this shit!
             if (prev_read < cur_read and
-                abs(prev_read - cur_read) > sensitivity and
-                    cur_read < hit_window):
-                # TODO: better implementation, less magic numbers
+                abs(prev_read - cur_read) > swing_force_thres and
+                    cur_read < swing_hit_thres):
+                # TODO: better implementation
                 # TODO: rumble on hit
-                if gyro_z < -5000 or gyro_z > 5000:
+                if gyro_z < swing_force_thres * -1:
                     if pid == 0x2006:
-                        if accel_z > 1800:
+                        if accel_z > swing_tilt_thres:
                             ui.write(e.EV_KEY, e.KEY_D, 1)
                             ui.write(e.EV_KEY, e.KEY_D, 0)
                             ui.syn()
@@ -67,7 +68,7 @@ def poll_joycon(pid, joycon):
                             ui.write(e.EV_KEY, e.KEY_F, 0)
                             ui.syn()
                     elif pid == 0x2007:
-                        if accel_z < -1800:
+                        if accel_z < swing_tilt_thres * -1:
                             ui.write(e.EV_KEY, e.KEY_K, 1)
                             ui.write(e.EV_KEY, e.KEY_K, 0)
                             ui.syn()
