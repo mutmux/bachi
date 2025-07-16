@@ -9,6 +9,8 @@ I play Taiko no Tatsujin on my Nintendo Switch occasionally, and there's an opti
 It's good to check beforehand if this is okay to use in whatever taiko simulator you're playing, especially if there's score submission and leaderboards involved.
 
 ### quick setup
+this script uses a few packages to do its thing: joycon-python, hid, evdev, and PyGLM. to avoid package confusion and the hassle of distro shipped python packages vs. what's supposed to be used, I recommend a local venv setup: 
+
 ```
 git clone https://github.com/mutmux/bachi.git
 cd bachi
@@ -16,7 +18,7 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
-Then, connect your left and right Joy-Con to your PC via Bluetooth. Certain Linux users may need to use [these udev rules](https://www.reddit.com/r/Stadia/comments/egcvpq/using_nintendo_switch_pro_controller_on_linux/fc5s7qm/) to access the devices without root (or at all). Depending on your distro and setup, you may or may not also require [joycond](https://github.com/DanielOgorchock/joycond).
+Then, connect your left and right Joy-Con to your PC via Bluetooth. Certain Linux users may need to use [these udev rules](https://www.reddit.com/r/Stadia/comments/egcvpq/using_nintendo_switch_pro_controller_on_linux/fc5s7qm/) to access the devices without root (or at all). Depending on your distro and setup, you may or may not also require [joycond](https://github.com/DanielOgorchock/joycond). I don't actually know if this script works fine on Windows, hopefully it does!
 
 After working all that out, you can finally run the script with `python bachi.py` inside the local venv, **with your Joy-Con upright on a flat surface**. If everything went okay, the two Joy-Con connected should be picked up by the script, and polling should start after a brief moment. Once text starts spewing out in the terminal, you can use the Joy-Con like bachi in whatever taiko simulator or clone you want.
 
