@@ -10,8 +10,15 @@ pid_joycons = {
     0x2007: "Joy-Con (R)"
 }
 
+bindings = {
+    "l_rim": e.KEY_D,
+    "l_centre": e.KEY_F,
+    "r_centre": e.KEY_J,
+    "r_rim": e.KEY_K
+}
+
 cap = {
-    e.EV_KEY: [e.KEY_D, e.KEY_F, e.KEY_J, e.KEY_K]
+    e.EV_KEY: [bindings["l_rim"], bindings["l_centre"], bindings["r_centre"], bindings["r_rim"]]
 }
 
 POLL_RATE = 300             # times per second to poll joy-con
@@ -20,7 +27,7 @@ HIT_DELAY = 100             # time in ms to block polling thread after a registe
 FORCE_REQ = 3500            # swing force requirement based on gyro_z to prevent misfire
 MIN_DIFF = 6000             # minimum difference between accel_y of current and previous poll
 DOWN_SWING_THRES = 3250     # downward swing angle (via accel_y) to determine hit
-TILT_SWING_THRES = 2000     # sideways swing angle (via accel_z) to determine don/kat
+TILT_SWING_THRES = 2000     # sideways swing angle (via accel_z) for differentiating rim/centre hits
 
 def send_key(ui, key):
     # briefly block thread after sending a key to prevent extraneous hits as swing completes.
@@ -53,14 +60,14 @@ def poll_joycon(pid, joycon):
                 if accel_y_cur - accel_y_prev > MIN_DIFF and accel_y_cur >= DOWN_SWING_THRES:
                     if pid == 0x2006:
                         if accel_z > TILT_SWING_THRES:
-                            send_key(ui, e.KEY_D)
+                            send_key(ui, bindings["l_rim"])
                         else:
-                            send_key(ui, e.KEY_F)
+                            send_key(ui, bindings["l_centre"])
                     elif pid == 0x2007:
                         if accel_z < TILT_SWING_THRES * -1:
-                            send_key(ui, e.KEY_K)
+                            send_key(ui, bindings["r_rim"])
                         else:
-                            send_key(ui, e.KEY_J)
+                            send_key(ui, bindings["r_centre"])
 
             accel_y_prev = accel_y_cur
             time.sleep(1 / POLL_RATE)
@@ -80,7 +87,7 @@ def main():
         print("Joy-Con detected, but failed to connect")
         sys.exit(1)
     except AssertionError:
-        print("Joy-Con thread not ready (joycon-python quirk)")
+        print("Joy-Con thread not ready (try again)")
         sys.exit()
 
     thread_joycon_l = threading.Thread(target=poll_joycon, args=(joycon_l_id[1], joycon_l))
