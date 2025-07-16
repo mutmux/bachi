@@ -24,7 +24,7 @@ try:
     joycon_l = JoyCon(*joycon_l_id)
     joycon_r = JoyCon(*joycon_r_id)
 except ValueError:
-    print("Failed to detect Joy-Con")
+    print("Failed to detect Joy-Con L/R (either, or both)")
     sys.exit(1)
 except OSError:
     print("Joy-Con detected, but failed to connect")
@@ -38,23 +38,23 @@ def poll_joycon(pid, joycon):
     print(f"Started polling {pid_joycons[pid]}")
 
     # initialise right after starting polling
-    cur_read = joycon.get_accel_y()
-    prev_read = cur_read
+    accel_y_cur = joycon.get_accel_y()
+    accel_y_prev = accel_y_cur
 
     with UInput({e.EV_KEY: [e.KEY_D, e.KEY_F, e.KEY_J, e.KEY_K]}) as ui:
         while True:
-            cur_read = joycon.get_accel_y()
+            accel_y_cur = joycon.get_accel_y()
 
             accel_z = joycon.get_accel_z()
             gyro_z = joycon.get_gyro_z()
 
-            print(f"[{pid_joycons[pid]}] y: {cur_read} \tz: {accel_z} \tgyro: {gyro_z}")
+            print(f"{pid_joycons[pid]}\ty:{accel_y_cur}  z:{accel_z}  gyro:{gyro_z}")
 
             # TODO: use madgwick filter with accel and gyro data for maintaining accuracy
             # redo all this shit!
-            if (prev_read < cur_read and
-                abs(prev_read - cur_read) > swing_force_thres and
-                    cur_read < swing_hit_thres):
+            if (accel_y_prev < accel_y_cur and
+                abs(accel_y_prev - accel_y_cur) > swing_force_thres and
+                    accel_y_cur < swing_hit_thres):
                 # TODO: better implementation
                 # TODO: rumble on hit
                 if gyro_z < swing_force_thres * -1:
@@ -77,7 +77,7 @@ def poll_joycon(pid, joycon):
                             ui.write(e.EV_KEY, e.KEY_J, 0)
                             ui.syn()
 
-            prev_read = cur_read
+            accel_y_prev = accel_y_cur
             time.sleep(poll_rate)
 
 
