@@ -2,7 +2,7 @@ import sys
 import threading
 import time
 
-from evdev import UInput, ecodes as e
+from pynput.keyboard import Controller
 from pyjoycon import JoyCon, get_L_id, get_R_id
 
 pid_joycons = {
@@ -11,15 +11,13 @@ pid_joycons = {
 }
 
 bindings = {
-    "l_rim": e.KEY_D,
-    "l_centre": e.KEY_F,
-    "r_centre": e.KEY_J,
-    "r_rim": e.KEY_K
+    "l_rim": 'd',
+    "l_centre": 'f',
+    "r_centre": 'j',
+    "r_rim": 'k'
 }
 
-cap = {
-    e.EV_KEY: [bindings["l_rim"], bindings["l_centre"], bindings["r_centre"], bindings["r_rim"]]
-}
+keyboard = Controller()
 
 POLL_RATE = 300             # times per second to poll joy-con
 HIT_DELAY = 100             # time in ms to block polling thread after a registered hit
@@ -29,13 +27,12 @@ MIN_DIFF = 6000             # minimum difference between accel_y of current and 
 DOWN_SWING_THRES = 3250     # downward swing angle (via accel_y) to determine hit
 TILT_SWING_THRES = 2000     # sideways swing angle (via accel_z) for differentiating rim/centre hits
 
-def send_key(ui, key):
+def send_key(key):
     # briefly block thread after sending a key to prevent extraneous hits as swing completes.
     # TODO: a better approach than this
     # TODO: rumble on hit?
-    ui.write(e.EV_KEY, key, 1)
-    ui.write(e.EV_KEY, key, 0)
-    ui.syn()
+    keyboard.press(key)
+    keyboard.release(key)
     time.sleep(HIT_DELAY / 1000)
 
 def poll_joycon(pid, joycon):
@@ -43,34 +40,33 @@ def poll_joycon(pid, joycon):
 
     accel_y_prev = 0
 
-    with UInput(cap) as ui:
-        while True:
-            # TODO: filter considerations in future for any accelerometer drift
-            accel_y_cur = joycon.get_accel_y()
-            accel_z = joycon.get_accel_z()
-            gyro_z = joycon.get_gyro_z()
+    while True:
+        # TODO: filter considerations in future for any accelerometer drift
+        accel_y_cur = joycon.get_accel_y()
+        accel_z = joycon.get_accel_z()
+        gyro_z = joycon.get_gyro_z()
 
-            print(f"{pid_joycons[pid]}\ty:{accel_y_cur}  z:{accel_z}  gyro:{gyro_z}")
+        print(f"{pid_joycons[pid]}\ty:{accel_y_cur}  z:{accel_z}  gyro:{gyro_z}")
 
-            # provided there's enough force on the gyro, register a hit if:
-            # - difference between previous & current accel_y readings is significant, AND
-            # - current accel_y reading is more than previous reading (implied), AND
-            # - current accel_y reading meets the hit threshold (is at a minimum downward angle)
-            if gyro_z < FORCE_REQ * -1:
-                if accel_y_cur - accel_y_prev > MIN_DIFF and accel_y_cur >= DOWN_SWING_THRES:
-                    if pid == 0x2006:
-                        if accel_z > TILT_SWING_THRES:
-                            send_key(ui, bindings["l_rim"])
-                        else:
-                            send_key(ui, bindings["l_centre"])
-                    elif pid == 0x2007:
-                        if accel_z < TILT_SWING_THRES * -1:
-                            send_key(ui, bindings["r_rim"])
-                        else:
-                            send_key(ui, bindings["r_centre"])
+        # provided there's enough force on the gyro, register a hit if:
+        # - difference between previous & current accel_y readings is significant, AND
+        # - current accel_y reading is more than previous reading (implied), AND
+        # - current accel_y reading meets the hit threshold (is at a minimum downward angle)
+        if gyro_z < FORCE_REQ * -1:
+            if accel_y_cur - accel_y_prev > MIN_DIFF and accel_y_cur >= DOWN_SWING_THRES:
+                if pid == 0x2006:
+                    if accel_z > TILT_SWING_THRES:
+                        send_key(bindings["l_rim"])
+                    else:
+                        send_key(bindings["l_centre"])
+                elif pid == 0x2007:
+                    if accel_z < TILT_SWING_THRES * -1:
+                        send_key(bindings["r_rim"])
+                    else:
+                        send_key(bindings["r_centre"])
 
-            accel_y_prev = accel_y_cur
-            time.sleep(1 / POLL_RATE)
+        accel_y_prev = accel_y_cur
+        time.sleep(1 / POLL_RATE)
 
 def main():
     try:
