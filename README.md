@@ -6,9 +6,10 @@ swing to hit taiko motion controls with Joy-Con
 ### huh?
 I play Taiko no Tatsujin on my Nintendo Switch occasionally, and there's an option to use motion controls to swing as if there was an actual taiko in front of you, rather than using the buttons. It's fun, but it kinda sucks. I think it's a neat gimmick however, and I play Taiko simulators and clones on PC sometimes, so I thought I'd implement it for PC Taiko players.
 
-**disclaimer:** This script works by sending virtual inputs corresponding to your motion. Most things play nice with this, but certain applications may not like this. The degree of "not like this" can vary from simply not working (because virtual inputs are ignored) to triggering anti-cheat measures if they exist.
-
-It's good to check beforehand if this is okay to use in whatever taiko simulator you're playing, especially if there's score submission and leaderboards involved.
+> [!WARNING]
+> This script works by sending virtual inputs corresponding to your motion. Most things play nice with this, but certain applications may not. This can vary from simply not working (because virtual inputs are ignored), to triggering anti-cheat mechanisms.
+>
+> It's good to check beforehand if this is okay to use in whatever taiko simulator you're playing, especially if there's score submission and leaderboards involved.
 
 ### quick setup
 this script uses a few packages to do its thing: joycon-python, hid, pynput, and PyGLM. to avoid package confusion and the hassle of distro shipped python packages vs. what's supposed to be used, I recommend a local venv setup: 
